@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Puerto de Huacho - Monitoreo Ambiental 2025{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="jumbotron bg-gradient-primary text-white p-5 rounded mb-4">
+            <h1 class="display-4">
+                <i class="fas fa-anchor"></i>
+                Puerto de Huacho - Monitoreo Ambiental
+            </h1>
+            <p class="lead">
+                ANALISIS Y EVALUACION DE ASPECTOS E IMPACTOS AMBIENTALES EN EL PUERTO DE HUACHO, AÑO 2025
+            </p>
+            <hr class="my-4 border-light">
+            <p>Herramienta realizado por Andres para el monitoreo de parámetros ambientales en el Puerto de Huacho 2025
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 border-primary">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-line fa-3x text-primary mb-3"></i>
+                <h5 class="card-title">Monitoreo en Tiempo Real</h5>
+                <p class="card-text">
+                    Registra mediciones de parámetros ambientales.
+                </p>
+                <a href="{{ url_for('monitoreo') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Agregar Medición
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 border-success">
+            <div class="card-body text-center">
+                <i class="fas fa-file-alt fa-3x text-success mb-3"></i>
+                <h5 class="card-title">Reportes y Análisis</h5>
+                <p class="card-text">
+                    Genera reportes detallados y visualiza tendencias de los
+                    parámetros ambientales monitoreados.
+                </p>
+                <a href="{{ url_for('reportes') }}" class="btn btn-success">
+                    <i class="fas fa-chart-bar"></i> Ver Reportes
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 border-info">
+            <div class="card-body text-center">
+                <i class="fas fa-database fa-3x text-info mb-3"></i>
+                <h5 class="card-title">Base de Datos</h5>
+                <p class="card-text">
+                    Crédito Andres Torres con la ayuda del Decreto Supremo N° 004-2017-MINAM.
+                </p>
+                <button class="btn btn-info" onclick="mostrarEstadisticas()">
+                    <i class="fas fa-info-circle"></i> Ver
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h5><i class="fas fa-map-marker-alt"></i> Estaciones de Monitoreo</h5>
+            </div>
+            <div class="card-body">
+                <div class="row" id="estaciones-info">
+                    <div class="col-md-3 text-center">
+                        <div class="p-3 bg-light rounded">
+                            <i class="fas fa-water fa-2x text-primary"></i>
+                            <h6 class="mt-2">Muelle</h6>
+                            <small class="text-muted">Monitoreo</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <div class="p-3 bg-light rounded">
+                            <i class="fas fa-wind fa-2x text-info"></i>
+                            <h6 class="mt-2">Zona</h6>
+                            <small class="text-muted">Calidad</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <div class="p-3 bg-light rounded">
+                            <i class="fas fa-leaf fa-2x text-success"></i>
+                            <h6 class="mt-2">Playa
+                            </h6>
+                            <small class="text-muted">Ecosistema</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <div class="p-3 bg-light rounded">
+                            <i class="fas fa-industry fa-2x text-warning"></i>
+                            <h6 class="mt-2">Zona</h6>
+                            <small class="text-muted">Impacto</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function mostrarEstadisticas() {
+        alert('Aplicacion desarrollado por Andres Torres Quichiz, proyecto realizado para el curso de Estadistica Basica para la Ingenieria');
+    }
+</script>
+{% endblock %}

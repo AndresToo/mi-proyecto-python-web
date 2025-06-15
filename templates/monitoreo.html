@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Monitoreo Ambiental - Puerto de Huacho{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2><i class="fas fa-clipboard-list"></i> Registro de Mediciones Ambientales</h2>
+        <hr>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5><i class="fas fa-plus-circle"></i> Nueva Medición</h5>
+            </div>
+            <div class="card-body">
+                <form id="form-medicion">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="estacion" class="form-label">Estación de Monitoreo</label>
+                            <select class="form-select" id="estacion" name="estacion" required>
+                                <option value="">Seleccionar estación...</option>
+                                {% for estacion in estaciones %}
+                                <option value="{{ estacion[0] }}">{{ estacion[1] }} ({{ estacion[3] }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="parametro" class="form-label">Parámetro a Medir</label>
+                            <select class="form-select" id="parametro" name="parametro" required>
+                                <option value="">Seleccionar parámetro...</option>
+                                {% for parametro in parametros %}
+                                <option value="{{ parametro[0] }}" data-unidad="{{ parametro[2] }}"
+                                    data-limite="{{ parametro[3] }}">
+                                    {{ parametro[1] }} ({{ parametro[2] }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="valor" class="form-label">Valor Medido</label>
+                            <input type="number" step="0.01" class="form-control" id="valor" name="valor" required>
+                            <small class="form-text text-muted" id="unidad-display"></small>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="responsable" class="form-label">Responsable</label>
+                            <input type="text" class="form-control" id="responsable" name="responsable" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="condiciones" class="form-label">Condiciones Climáticas</label>
+                            <select class="form-select" id="condiciones" name="condiciones">
+                                <option value="Soleado">Soleado</option>
+                                <option value="Nublado">Nublado</option>
+                                <option value="Lluvia ligera">Lluvia ligera</option>
+                                <option value="Lluvia intensa">Lluvia intensa</option>
+                                <option value="Viento fuerte">Viento fuerte</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="observaciones" class="form-label">Observaciones</label>
+                        <textarea class="form-control" id="observaciones" name="observaciones" rows="3"
+                            placeholder="Observaciones adicionales sobre la medición..."></textarea>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save"></i> Registrar Medición
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h6><i class="fas fa-info-circle"></i> Información del Parámetro</h6>
+            </div>
+            <div class="card-body" id="info-parametro">
+                <p class="text-muted">Selecciona un parámetro para ver información detallada.</p>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header bg-warning text-dark">
+                <h6><i class="fas fa-exclamation-triangle"></i> Límites Permisibles</h6>
+            </div>
+            <div class="card-body" id="limites-parametro">
+                <p class="text-muted">...</p>
+                <div id="imagen-estacion" class="text-center mt-3"></div> <!-- NUEVO -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Actualizar información del parámetro seleccionado
+    document.getElementById('parametro').addEventListener('change', function () {
+        const select = this;
+        const selectedOption = select.options[select.selectedIndex];
+
+        if (selectedOption.value) {
+            const unidad = selectedOption.getAttribute('data-unidad');
+            const limite = selectedOption.getAttribute('data-limite');
+            const nombre = selectedOption.text.split(' (')[0];
+
+            document.getElementById('unidad-display').textContent = `Unidad: ${unidad}`;
+            document.getElementById('info-parametro').innerHTML = `
+            <h6>${nombre}</h6>
+            <p><strong>Unidad:</strong> ${unidad}</p>
+            <p><strong>Límite permisible:</strong> ${limite} ${unidad}</p>
+        `;
+
+            document.getElementById('limites-parametro').innerHTML = `
+            <div class="alert alert-warning">
+                <strong>Valor límite:</strong> ${limite} ${unidad}
+            </div>
+        `;
+        }
+    });
+
+    // Enviar formulario
+    document.getElementById('form-medicion').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+
+        fetch('/agregar_medicion', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('¡Medición registrada correctamente!');
+                    this.reset();
+                    document.getElementById('info-parametro').innerHTML = '<p class="text-muted">Selecciona un parámetro para ver información detallada.</p>';
+                    document.getElementById('limites-parametro').innerHTML = '<p class="text-muted">La información aparecerá al seleccionar un parámetro.</p>';
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Error al enviar los datos: ' + error);
+            });
+    });
+
+    document.getElementById('estacion').addEventListener('change', function () {
+        const valor = this.value;
+        const contenedorImagen = document.getElementById('imagen-estacion');
+
+        let ruta = "";
+        if (valor.includes("Muelle") || valor.includes("muelle")) {
+            ruta = "/static/img/muelle_principal.jpg";
+        } else if (valor.includes("Procesamiento") || valor.includes("procesamiento")) {
+            ruta = "/static/img/zona_procesamiento.jpg";
+        } else {
+            contenedorImagen.innerHTML = "";
+            return;
+        }
+
+        contenedorImagen.innerHTML = `
+        <img src="${ruta}" alt="Imagen de estación" style="max-width:100%; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.2);">
+    `;
+    });
+</script>
+{% endblock %}
