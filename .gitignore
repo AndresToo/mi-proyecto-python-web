@@ -1,0 +1,28 @@
+#Ignora entornos virtuales
+.venv/
+puerto_huacho_ambiental/.venv/
+
+# Logs y bases de datos locales
+*.log
+*.db
+*.sqlite
+*.sql
+
+#Ignora archivos compilados por Python
+__pycache__/
+*.pyc
+
+#Ignora archivos del sistema
+.DS_Store
+Thumbs.db
+
+#Ignora archivos de configuración y entorno
+.env
+*.env
+
+#Ignora archivos temporales de despliegue
+runtime.txt
+
+#Otros que podrías querer ignorar
+*.pid
+*.bak
