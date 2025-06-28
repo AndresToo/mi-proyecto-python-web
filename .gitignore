@@ -20,9 +20,6 @@ Thumbs.db
 .env
 *.env
 
-#Ignora archivos temporales de despliegue
-runtime.txt
-
 #Otros que podrías querer ignorar
 *.pid
 *.bak
