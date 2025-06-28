@@ -1,5 +1,6 @@
+# Importación de librerías 
 from flask import Flask, render_template, request, jsonify, redirect, url_for, send_file, make_response
-from database.models import DatabaseManager
+from database.models import DatabaseManager  # manejar la base de datos
 import json
 import csv
 import io
@@ -11,16 +12,25 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib.units import inch
 import pandas as pd
 
+# Inicialización de la base de datos
 app = Flask(__name__)
 db = DatabaseManager()
 
+# principal: página de inicio
 @app.route('/')
 def index():
+    ip_cliente = request.headers.get('X-Forwarded-For', request.remote_addr)
+    navegador = request.user_agent.string
+    print(f"📥 Nueva visita desde IP: {ip_cliente} - Navegador: {navegador}")
+
+    with open('ips.log', 'a') as f:
+        f.write(f"{datetime.now()} - IP: {ip_cliente} - Navegador: {navegador}\n")
     return render_template('index.html')
 
+# formulario de monitoreo
 @app.route('/monitoreo')
 def monitoreo():
-    # Obtener estaciones y parámetros para los formularios
+    # parámetros desde la base de datos
     conn = db.get_connection()
     cursor = conn.cursor()
     
@@ -34,13 +44,15 @@ def monitoreo():
     
     return render_template('monitoreo.html', estaciones=estaciones, parametros=parametros)
 
+# Ruta para agregar una medición desde un formulario
 @app.route('/agregar_medicion', methods=['POST'])
 def agregar_medicion():
     try:
-        data = request.form
+        data = request.form  # Recoge los datos del formulario
         conn = db.get_connection()
         cursor = conn.cursor()
         
+        # Inserta la nueva medición en la base de datos
         cursor.execute('''
             INSERT INTO mediciones 
             (id_estacion, id_parametro, valor_medido, fecha_medicion, responsable_medicion, condiciones_climaticas, observaciones)
@@ -49,7 +61,7 @@ def agregar_medicion():
             data['estacion'],
             data['parametro'],
             float(data['valor']),
-            datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            datetime.now().strftime('%Y-%m-%d %H:%M:%S'),  # Fecha y hora actual
             data['responsable'],
             data['condiciones'],
             data['observaciones']
@@ -61,6 +73,7 @@ def agregar_medicion():
         return jsonify({'success': True, 'message': 'Medición agregada correctamente'})
     
     except Exception as e:
+        # En caso de error, devuelve el mensaje de excepción
         return jsonify({'success': False, 'message': str(e)})
 
 @app.route('/reportes')
@@ -84,11 +97,13 @@ def reportes():
     
     return render_template('reportes.html', mediciones=mediciones)
 
+# API para enviar datos en JSON para gráficos (por parámetro)
 @app.route('/api/datos_grafico/<parametro>')
 def datos_grafico(parametro):
     conn = db.get_connection()
     cursor = conn.cursor()
     
+    # Calcula el promedio diario del parámetro solicitado (últimos 30 días)
     cursor.execute('''
         SELECT DATE(m.fecha_medicion) as fecha, AVG(m.valor_medido) as promedio
         FROM mediciones m
@@ -102,15 +117,16 @@ def datos_grafico(parametro):
     datos = cursor.fetchall()
     conn.close()
     
+    # Devuelve los datos en formato JSON
     return jsonify([{'fecha': row[0], 'valor': row[1]} for row in datos])
 
 # NUEVAS FUNCIONES DE DESCARGA
-
+# Función para obtener todos los datos de mediciones con estado
 def obtener_datos_completos():
-    """Función auxiliar para obtener todos los datos de mediciones"""
     conn = db.get_connection()
     cursor = conn.cursor()
     
+    # Consulta completa con join y evaluación de límites
     cursor.execute('''
         SELECT m.fecha_medicion, e.nombre_estacion, p.nombre_parametro, 
                m.valor_medido, p.unidad_medida, p.valor_limite_permisible,
@@ -130,12 +146,12 @@ def obtener_datos_completos():
     
     return datos
 
+# Exportar datos a CSV
 @app.route('/exportar/csv')
 def exportar_csv():
     """Exportar datos a CSV"""
     try:
         datos = obtener_datos_completos()
-        
         # Crear un buffer en memoria
         output = io.StringIO()
         writer = csv.writer(output)
@@ -162,6 +178,7 @@ def exportar_csv():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+# Exportar datos a Excel
 @app.route('/exportar/excel')
 def exportar_excel():
     """Exportar datos a Excel"""
@@ -171,13 +188,13 @@ def exportar_excel():
         # Crear DataFrame
         df = pd.DataFrame(datos, columns=[
             'Fecha', 'Estación', 'Parámetro', 'Valor', 'Unidad', 
-            'Límite', 'Responsable', 'Condiciones', 'Observaciones', 'Estado'
+            'Límite', 'Responsable de la medicion', 'Condiciones', 'Observaciones', 'Estado'
         ])
         
         # Crear buffer en memoria
         output = io.BytesIO()
         
-        # Crear archivo Excel
+        # Crear archivo Excel con pandas
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
             df.to_excel(writer, sheet_name='Monitoreo Ambiental', index=False)
             
@@ -210,6 +227,7 @@ def exportar_excel():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+# Exportar datos a PDF
 @app.route('/exportar/pdf')
 def exportar_pdf():
     """Generar reporte PDF"""
@@ -312,4 +330,15 @@ def exportar_pdf():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    import os
+
+    port = int(os.environ.get('PORT', 8000))
+
+    # Detectar si está en entorno local
+    is_local = os.environ.get('RAILWAY_STATIC_URL') is None
+
+    app.run(
+        debug=True,
+        host='127.0.0.1' if is_local else '0.0.0.0',
+        port=port
+    )

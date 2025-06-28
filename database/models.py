@@ -116,8 +116,8 @@ class DatabaseManager:
             
             # Estaciones de monitoreo
             estaciones = [
-                ('Muelle Principal', -11.1065, -77.6050, 'agua'),
-                ('Zona Procesamiento', -11.1070, -77.6045, 'aire'),
+                ('Entrada del Muelle', -11.12204, -77.6160, 'agua'),
+                ('Zona de embarque', -11.12132, -77.6176, 'agua'),
             ]
             
             cursor.executemany('''
@@ -127,11 +127,11 @@ class DatabaseManager:
             ''', estaciones)
         
             
-            # Parámetros ambientales
+            # Parámetros ambientales µg/m³
             parametros = [
-                ('pH', 'unidades', 8.5, 'agua', 'Potencial de hidrógeno'),
-                ('Oxígeno Disuelto', 'mg/L', 5.0, 'agua', 'Concentración de oxígeno en agua'),
-                ('Material Particulado PM10', 'µg/m³', 150, 'aire', 'Partículas menores a 10 micrones'),
+                ('pH', 'escala', 6.5 - 8.5, 'agua', 'Potencial de hidrógeno'),
+                ('Oxígeno Disuelto (OD)', 'mg/L', 5.0, 'agua', 'Concentración de oxígeno en agua'),
+                ('Salinidad', 'ppm', 35, 'agua', 'Sales disueltas en el agua'),
                 ('Temperatura', '°C', 25, 'agua', 'Temperatura del agua'),
             ]
             
