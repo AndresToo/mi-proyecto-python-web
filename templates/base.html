@@ -3,31 +3,310 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistema de Monitoreo Ambiental del Puerto de Huacho - Análisis y evaluación de aspectos e impactos ambientales 2025">
+    <meta name="keywords" content="monitoreo ambiental, puerto huacho, análisis ambiental, impacto ambiental">
+    <meta name="author" content="Andres Torres Quichiz">
+    
     <title>{% block title %}Puerto de Huacho - Monitoreo Ambiental{% endblock %}</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    
+    <!-- Preconnect para optimizar carga de fuentes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Google Fonts - Inter para mejor legibilidad -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Animate.css para animaciones -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    
+    <!-- Estilos personalizados -->
+    <link href="{{ url_for('static', filename='static/style.css') }}" rel="stylesheet">
+    
+    <!-- PWA Meta tags -->
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Puerto Huacho Monitor">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="position-fixed w-100 h-100 d-flex justify-content-center align-items-center bg-primary" style="z-index: 9999; top: 0; left: 0;">
+        <div class="text-center text-white">
+            <div class="spinner-border mb-3" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <h5 class="animate__animated animate__pulse animate__infinite">Cargando Sistema de Monitoreo...</h5>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('index') }}">
-                <i class="fas fa-water"></i> Puerto Huacho - Monitoreo Ambiental
+            <a class="navbar-brand animate__animated animate__fadeInLeft" href="{{ url_for('index') }}">
+                <i class="fas fa-water me-2"></i>
+                <span class="d-none d-md-inline">Puerto Huacho</span>
+                <span class="d-md-none">PH Monitor</span>
             </a>
-            <div class="navbar-nav">
-                <a class="nav-link" href="{{ url_for('index') }}">Inicio</a>
-                <a class="nav-link" href="{{ url_for('monitoreo') }}">Monitoreo</a>
-                <a class="nav-link" href="{{ url_for('reportes') }}">Reportes</a>
+            
+            <!-- Mobile menu button -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}">
+                            <i class="fas fa-home me-1"></i>Inicio
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'monitoreo' %}active{% endif %}" href="{{ url_for('monitoreo') }}">
+                            <i class="fas fa-clipboard-list me-1"></i>Monitoreo
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'reportes' %}active{% endif %}" href="{{ url_for('reportes') }}">
+                            <i class="fas fa-chart-bar me-1"></i>Reportes
+                        </a>
+                    </li>
+                </ul>
+                
+                <!-- Status indicator -->
+                <div class="navbar-text ms-3 d-none d-lg-block">
+                    <span id="status-indicator" class="badge bg-success">
+                        <i class="fas fa-circle me-1"></i>Sistema Activo
+                    </span>
+                </div>
             </div>
         </div>
     </nav>
 
-    <main class="container mt-4">
-        {% block content %}{% endblock %}
+    <!-- Main Content -->
+    <main class="container-fluid" style="margin-top: 80px; min-height: calc(100vh - 160px);">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mt-3 d-none d-md-block">
+            <ol class="breadcrumb bg-transparent">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('index') }}" class="text-decoration-none">
+                        <i class="fas fa-home"></i> Inicio
+                    </a>
+                </li>
+                {% block breadcrumb %}{% endblock %}
+            </ol>
+        </nav>
+
+        <!-- Alerts Container -->
+        <div id="alerts-container" class="position-fixed" style="top: 100px; right: 20px; z-index: 1050;"></div>
+
+        <!-- Page Content -->
+        <div class="animate__animated animate__fadeIn">
+            {% block content %}{% endblock %}
+        </div>
     </main>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.16.1/plotly.min.js"></script>
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="fw-bold">
+                        <i class="fas fa-water me-2"></i>
+                        Puerto de Huacho - Monitoreo Ambiental
+                    </h6>
+                    <p class="mb-2 text-muted">
+                        Sistema de análisis y evaluación de aspectos e impactos ambientales
+                    </p>
+                    <small class="text-muted">
+                        <i class="fas fa-calendar me-1"></i>
+                        Año 2025 | Decreto Supremo N° 004-2017-MINAM
+                    </small>
+                </div>
+                <div class="col-md-3">
+                    <h6 class="fw-bold">Enlaces Rápidos</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('index') }}" class="text-muted text-decoration-none">Inicio</a></li>
+                        <li><a href="{{ url_for('monitoreo') }}" class="text-muted text-decoration-none">Monitoreo</a></li>
+                        <li><a href="{{ url_for('reportes') }}" class="text-muted text-decoration-none">Reportes</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h6 class="fw-bold">Información</h6>
+                    <p class="text-muted mb-1">
+                        <i class="fas fa-user me-1"></i>
+                        Desarrollado por Andres Torres Quichiz
+                    </p>
+                    <p class="text-muted mb-1">
+                        <i class="fas fa-graduation-cap me-1"></i>
+                        Proyecto de Estadística Básica
+                    </p>
+                    <p class="text-muted">
+                        <i class="fas fa-code me-1"></i>
+                        Ingeniería de Sistemas
+                    </p>
+                </div>
+            </div>
+            <hr class="my-3">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <small class="text-muted">
+                        © 2025 Puerto de Huacho. Todos los derechos reservados.
+                    </small>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <small class="text-muted">
+                        Versión 1.0.0 | 
+                        <span id="last-update">Última actualización: <span id="timestamp"></span></span>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to top button -->
+    <button id="back-to-top" class="btn btn-primary position-fixed d-none" style="bottom: 20px; right: 20px; z-index: 1000; border-radius: 50%; width: 50px; height: 50px;">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.26.0/plotly.min.js"></script>
+    
+    <!-- Global JavaScript -->
+    <script>
+        // Variables globales
+        window.appConfig = {
+            baseUrl: '{{ request.url_root }}',
+            currentPage: '{{ request.endpoint }}',
+            timestamp: new Date().toLocaleString('es-PE')
+        };
+
+        // Función para mostrar loading
+        function showLoading() {
+            document.getElementById('loading-screen').style.display = 'flex';
+        }
+
+        // Función para ocultar loading
+        function hideLoading() {
+            const loadingScreen = document.getElementById('loading-screen');
+            loadingScreen.style.opacity = '0';
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+            }, 300);
+        }
+
+        // Función para mostrar alertas
+        function showAlert(message, type = 'info', duration = 5000) {
+            const alertsContainer = document.getElementById('alerts-container');
+            const alertId = 'alert-' + Date.now();
+            
+            const alertHTML = `
+                <div id="${alertId}" class="alert alert-${type} alert-dismissible fade show animate__animated animate__fadeInRight" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+                        <div>${message}</div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            alertsContainer.insertAdjacentHTML('beforeend', alertHTML);
+            
+            // Auto-dismiss
+            if (duration > 0) {
+                setTimeout(() => {
+                    const alert = document.getElementById(alertId);
+                    if (alert) {
+                        alert.classList.remove('animate__fadeInRight');
+                        alert.classList.add('animate__fadeOutRight');
+                        setTimeout(() => alert.remove(), 300);
+                    }
+                }, duration);
+            }
+        }
+
+        // Función para actualizar el estado del sistema
+        function updateSystemStatus() {
+            const indicator = document.getElementById('status-indicator');
+            const isOnline = navigator.onLine;
+            
+            if (isOnline) {
+                indicator.className = 'badge bg-success';
+                indicator.innerHTML = '<i class="fas fa-circle me-1"></i>Sistema Activo';
+            } else {
+                indicator.className = 'badge bg-danger';
+                indicator.innerHTML = '<i class="fas fa-circle me-1"></i>Sin Conexión';
+            }
+        }
+
+        // Back to top functionality
+        function setupBackToTop() {
+            const backToTopBtn = document.getElementById('back-to-top');
+            
+            window.addEventListener('scroll', () => {
+                if (window.pageYOffset > 300) {
+                    backToTopBtn.classList.remove('d-none');
+                    backToTopBtn.classList.add('animate__animated', 'animate__fadeIn');
+                } else {
+                    backToTopBtn.classList.add('d-none');
+                }
+            });
+            
+            backToTopBtn.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
+
+        // Inicialización cuando el DOM está listo
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ocultar loading screen
+            setTimeout(hideLoading, 1000);
+            
+            // Actualizar timestamp
+            document.getElementById('timestamp').textContent = window.appConfig.timestamp;
+            
+            // Configurar back to top
+            setupBackToTop();
+            
+            // Actualizar estado del sistema
+            updateSystemStatus();
+            
+            // Listener para cambios de conexión
+            window.addEventListener('online', updateSystemStatus);
+            window.addEventListener('offline', updateSystemStatus);
+            
+            // Activar tooltips de Bootstrap
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+
+        // Service Worker para PWA (opcional)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                    console.log('SW registrado con éxito:', registration.scope);
+                }, function(err) {
+                    console.log('SW falló al registrarse:', err);
+                });
+            });
+        }
+    </script>
+    
+    <!-- Script personalizado de la página -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <!-- Scripts adicionales por página -->
+    {% block scripts %}{% endblock %}
 </body>
 </html>
